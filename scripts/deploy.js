@@ -3,7 +3,8 @@ const path = require('path');
 
 // write down contracts that you wish to deploy one-by-one (names only, no .sol extension)
 // after the run, find the ABIs and addresses in frontend/src/contracts
-const contracts = ["Calc"];
+const contracts = ["Lottery"];
+const frontendFile = 'frontend-nuxt'
 
 // DO NOT MODIFY CODE BELOW UNLESS ABSOLUTELY NECESSARY
 async function publishContract(contractName, chainId) {
@@ -16,22 +17,22 @@ async function publishContract(contractName, chainId) {
   // copy the contract JSON file to front-end and add the address field in it
   fs.copyFileSync(
     path.join(__dirname, "../artifacts/contracts/" + contractName + ".sol/" + contractName + ".json"), //source
-    path.join(__dirname, "../frontend/src/contracts/" + contractName + ".json") // destination
+    path.join(__dirname, `../${frontendFile}/contracts/` + contractName + ".json") // destination
   );
 
   // check if addresses.json already exists
-  let exists = fs.existsSync(path.join(__dirname, "../frontend/src/contracts/addresses.json"));
+  let exists = fs.existsSync(path.join(__dirname, `../${frontendFile}/contracts/addresses.json`));
 
-  // if not, created the file
+  // if not, create the file
   if (!exists) {
     fs.writeFileSync(
-      path.join(__dirname, "../frontend/src/contracts/addresses.json"), 
+      path.join(__dirname, `../${frontendFile}/contracts/addresses.json`),
       "{}"
-    ); 
+    );
   }
 
   // update the addresses.json file with the new contract address
-  let addressesFile = fs.readFileSync(path.join(__dirname, "../frontend/src/contracts/addresses.json"));
+  let addressesFile = fs.readFileSync(path.join(__dirname, `../${frontendFile}/contracts/addresses.json`));
   let addressesJson = JSON.parse(addressesFile);
 
   if (!addressesJson[contractName]) {
@@ -41,9 +42,9 @@ async function publishContract(contractName, chainId) {
   addressesJson[contractName][chainId] = contract.address;
 
   fs.writeFileSync(
-    path.join(__dirname, "../frontend/src/contracts/addresses.json"), 
+    path.join(__dirname, `../${frontendFile}/contracts/addresses.json`),
     JSON.stringify(addressesJson)
-  ); 
+  );
 }
 
 async function main() {
@@ -56,14 +57,14 @@ async function main() {
     "Deploying contracts with the account:",
     deployer.address
   );
-  
+
   console.log("Account balance:", (await deployer.getBalance()).toString());
 
   for (cont of contracts) {
     await publishContract(cont, networkData.chainId);
   }
 }
-  
+
 main()
   .then(() => process.exit(0))
   .catch(error => {
